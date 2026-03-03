@@ -1,44 +1,59 @@
-name: Deploy React Admin Panel App to Server
+name: Deploy Node API to Server (Auto Install)
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-
-      # 1️⃣ Checkout Code
+      # 1️⃣ Checkout
       - name: Checkout Code
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4  
-        with:
-          node-version: '22'  
-          cache: 'npm'
-
-      # 3️⃣ Install Dependencies
-      - name: Install Dependencies
-        run: npm ci
-
-      # 4️⃣ Build React App
-      - name: Build App
-        run: npm run build  # Vite build, creates dist/
-
-      # 5️⃣ Debug - List files
-      - name: Debug - List dist folder
-        run: ls -la dist/   # Optional, for verification
-
-      # 6️⃣ Deploy to Server via Rsync (COPY CONTENTS ONLY)
-      - name: Deploy to Server via Rsync
+      # 2️⃣ Deploy Files
+      - name: Deploy via Rsync
         uses: burnett01/rsync-deployments@5.2
         with:
           switches: -avzr --delete
-          path: dist/*                # 🔥 COPY CONTENTS of dist/, NOT the dist folder itself
+          path: ./
           remote_path: /var/www/node_api/
           remote_host: ${{ secrets.SERVER_HOST }}
           remote_user: ${{ secrets.SERVER_USER }}
           remote_key: ${{ secrets.SERVER_SSH_KEY }}
+
+      # 3️⃣ Setup Server & Restart App
+      - name: Setup Server & Restart App
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "🚀 Checking Node.js..."
+
+            if ! command -v node &> /dev/null
+            then
+              echo "Installing Node.js 22..."
+              curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            echo "🚀 Checking PM2..."
+
+            if ! command -v pm2 &> /dev/null
+            then
+              echo "Installing PM2..."
+              sudo npm install -g pm2
+            fi
+
+            cd /var/www/node_api
+
+            echo "Installing dependencies..."
+            npm install --production
+
+            echo "Restarting App..."
+            pm2 restart node_api || pm2 start index.js --name node_api
+            pm2 save

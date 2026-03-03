@@ -17,15 +17,15 @@ jobs:
       - name: Deploy via Rsync
         uses: burnett01/rsync-deployments@5.2
         with:
-          switches: -avzr --delete --exclude='.env' --exclude='node_modules'
+          switches: -avzr --delete --exclude='.env'
           path: ./
           remote_path: /var/www/node_api/
           remote_host: ${{ secrets.SERVER_HOST }}
           remote_user: ${{ secrets.SERVER_USER }}
           remote_key: ${{ secrets.SERVER_SSH_KEY }}
 
-      # 3️⃣ Setup Server & Start App
-      - name: Setup Server & Start App
+      # 3️⃣ Setup Server & Restart App
+      - name: Setup Server & Restart App
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -33,45 +33,55 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             echo "🚀 Checking Node.js..."
-            if ! command -v node &> /dev/null; then
+
+            if ! command -v node &> /dev/null
+            then
+              echo "📦 Installing Node.js 22..."
               curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
               sudo apt-get install -y nodejs
+            else
+              echo "✅ Node.js $(node -v) iko tayari"
             fi
 
-            echo "📁 Going to project directory..."
+            echo "🚀 Checking PM2..."
+
+            if ! command -v pm2 &> /dev/null
+            then
+              echo "📦 Installing PM2..."
+              sudo npm install -g pm2
+            else
+              echo "✅ PM2 iko tayari"
+            fi
+
             cd /var/www/node_api
 
             echo "📦 Installing dependencies..."
-            npm install
+            npm install --production
 
-            echo "🔍 Checking if app is already running..."
-            # Angalia kama app inaendeshwa kwenye port 3000 (badilisha kama port yako ni tofauti)
-            if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
-              echo "🛑 Stopping existing app on port 3000..."
-              kill -9 $(lsof -t -i:3000) 2>/dev/null || true
-            fi
-
-            echo "🚀 Starting app with npm start..."
-            # Anzisha app kwenye background
-            nohup npm start > app.log 2>&1 &
-
-            # Subiri kidogo app ianze
-            sleep 5
-
-            # Angalia kama app imeanza vizuri
-            if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
-              echo "✅ App imeanza vizuri kwenye port 3000!"
-              echo "📋 Process ID: $(lsof -t -i:3000)"
+            echo "🚀 Running npm start..."
+            # Angalia kama app inaendeshwa na PM2
+            if pm2 list | grep -q "node_api"
+            then
+              echo "🔄 Restarting app via PM2..."
+              pm2 restart node_api
             else
-              echo "❌ App imeshindwa kuanza. Angalia error kwenye app.log"
-              tail -n 20 app.log
-              exit 1
+              echo "▶️ Starting app via npm start..."
+              # Hapa tunatumia npm start kuanzisha app
+              # Kumbuka: Hii itaenda background peke yake
+              npm start &
+              
+              # Tunaongeza muda kidogo kuruhusu app kuanza
+              sleep 5
+              
+              # Kisha tumiangalie kwa PM2
+              echo "🔄 Registering with PM2..."
+              pm2 start npm --name "node_api" -- start
             fi
+            
+            # Save PM2 configuration
+            pm2 save
+            pm2 startup systemd -u $USER --hp /home/$USER
 
-            echo ""
-            echo "═══════════════════════════════════════════"
-            echo "🎉 DEPLOYMENT COMPLETE!"
-            echo "═══════════════════════════════════════════"
-            echo "📌 App inaendeshwa kwenye: http://${{ secrets.SERVER_HOST }}:3000"
-            echo "📊 Angalia logs: tail -f /var/www/node_api/app.log"
-            echo "🛑 Kuacha app: pkill -f 'node' au linda process manually"
+            echo "✅ Deployment complete! App inaendeshwa kwenye port 3000 (default)"
+            echo "📊 Angalia status: pm2 status"
+            echo "📜 Angalia logs: pm2 logs node_api"

@@ -17,14 +17,14 @@ jobs:
       - name: Deploy via Rsync
         uses: burnett01/rsync-deployments@5.2
         with:
-          switches: -avzr --delete --exclude='node_modules' --exclude='.git'
+          switches: -avzr --delete --exclude='.env' --exclude='node_modules'
           path: ./
           remote_path: /var/www/node_api/
           remote_host: ${{ secrets.SERVER_HOST }}
           remote_user: ${{ secrets.SERVER_USER }}
           remote_key: ${{ secrets.SERVER_SSH_KEY }}
 
-      # 3️⃣ Setup Server & Start App (Port 5000)
+      # 3️⃣ Setup Server & Start App
       - name: Setup Server & Start App
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,52 +41,30 @@ jobs:
             echo "📁 Going to project directory..."
             cd /var/www/node_api
 
-            # 🔐 Handle .env file (important!)
-            echo "🔐 Setting up .env file..."
-            if [ ! -f .env ]; then
-              echo "❌ .env file missing! Creating from secrets..."
-              # Create .env from GitHub secrets
-              echo "${{ secrets.ENV_FILE }}" > .env
-            else
-              echo "✅ .env file ipo"
-            fi
-
             echo "📦 Installing dependencies..."
             npm install
 
-            echo "🔍 Checking if app is already running on port 5000..."
-            # Check if port 5000 is in use
-            if lsof -Pi :5000 -sTCP:LISTEN -t >/dev/null ; then
-              echo "🛑 Stopping existing app on port 5000..."
-              kill -9 $(lsof -t -i:5000) 2>/dev/null || true
+            echo "🔍 Checking if app is already running..."
+            # Angalia kama app inaendeshwa kwenye port 3000 (badilisha kama port yako ni tofauti)
+            if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
+              echo "🛑 Stopping existing app on port 3000..."
+              kill -9 $(lsof -t -i:3000) 2>/dev/null || true
             fi
 
-            echo "🚀 Starting app with npm start on port 5000..."
-            # Start app in background (same as your local)
+            echo "🚀 Starting app with npm start..."
+            # Anzisha app kwenye background
             nohup npm start > app.log 2>&1 &
 
-            # Wait for app to start
-            echo "⏳ Waiting for app to start..."
-            sleep 8
+            # Subiri kidogo app ianze
+            sleep 5
 
-            # Check if app started successfully
-            if lsof -Pi :5000 -sTCP:LISTEN -t >/dev/null ; then
-              echo "✅ App imeanza vizuri kwenye port 5000!"
-              echo "📋 Process ID: $(lsof -t -i:5000)"
-              
-              # Show the last few lines of log
-              echo ""
-              echo "📋 Last 10 lines of app.log:"
-              echo "─────────────────────────────"
-              tail -n 10 app.log
-              echo "─────────────────────────────"
+            # Angalia kama app imeanza vizuri
+            if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
+              echo "✅ App imeanza vizuri kwenye port 3000!"
+              echo "📋 Process ID: $(lsof -t -i:3000)"
             else
-              echo "❌ App imeshindwa kuanza. Checking logs..."
-              echo ""
-              echo "📋 Last 20 lines of app.log:"
-              echo "─────────────────────────────"
+              echo "❌ App imeshindwa kuanza. Angalia error kwenye app.log"
               tail -n 20 app.log
-              echo "─────────────────────────────"
               exit 1
             fi
 
@@ -94,8 +72,6 @@ jobs:
             echo "═══════════════════════════════════════════"
             echo "🎉 DEPLOYMENT COMPLETE!"
             echo "═══════════════════════════════════════════"
-            echo "📌 App inaendeshwa kwenye: http://${{ secrets.SERVER_HOST }}:5000"
+            echo "📌 App inaendeshwa kwenye: http://${{ secrets.SERVER_HOST }}:3000"
             echo "📊 Angalia logs: tail -f /var/www/node_api/app.log"
-            echo "🛑 Kuacha app: kill -9 $(lsof -t -i:5000)"
-            echo ""
-            echo "📡 Database connection: ${{ secrets.DB_CONNECTION_STATUS || 'Imeunganishwa' }}"
+            echo "🛑 Kuacha app: pkill -f 'node' au linda process manually"

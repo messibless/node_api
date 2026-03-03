@@ -1,0 +1,37 @@
+
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+
+
+const User = sequelize.define('User', {
+  id: { 
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
+  
+ 
+  phone_number: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    unique: true,
+    validate: {
+      is: /^[\d+\-()\s]+$/i,
+    }
+  },
+  password: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  }
+  
+}, {
+  tableName: 'users',
+  timestamps: true,
+});
+
+module.exports = User;
+
+
+

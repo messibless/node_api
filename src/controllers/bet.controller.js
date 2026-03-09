@@ -17,6 +17,20 @@ const getAll = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// PATCH /bets/:id/approve
+const approveBetController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { result } = req.body; // WON or LOST
+
+    const updatedBet = await betService.approveBet(id, result);
+
+    res.json(updatedBet);
+
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 const getOne = async (req, res) => {
   try {
@@ -50,5 +64,6 @@ module.exports = {
   getAll,
   getOne,
   update,
-  remove
+  remove,
+  approveBetController
 };

@@ -3,7 +3,7 @@ const liveService = require('../services/live.service');
 // CREATE
 const createLiveMatch = async (req, res) => {
   try {
-      const match = await liveService.createFootballMatch(req.body);
+      const match = await liveService.createLiveMatch(req.body);
       res.status(201).json(match);
     } catch (err) {
     res.status(400).json({ message: err.message });

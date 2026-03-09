@@ -6,7 +6,8 @@ const LiveMatch = sequelize.define('LiveMatch', {
 
   id: {
     type: DataTypes.BIGINT,
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement:true
   },
 
   time: {
@@ -36,6 +37,10 @@ const LiveMatch = sequelize.define('LiveMatch', {
     allowNull: true
   },
   homeGoals: {
+    type: DataTypes.STRING(150),
+    allowNull: true
+  },
+  timeUsed: {
     type: DataTypes.STRING(150),
     allowNull: true
   },

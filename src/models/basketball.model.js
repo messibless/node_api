@@ -6,7 +6,8 @@ const BasketballMatch = sequelize.define('BasketballMatch', {
 
   id: {
     type: DataTypes.BIGINT,
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement:true
   },
 
   time: {

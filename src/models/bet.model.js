@@ -6,7 +6,7 @@ const Bet = sequelize.define('Bet', {
   id: {
     type: DataTypes.BIGINT,
     primaryKey: true,
-    autoIncrement: true
+    allowNull:false
   },
   time: {
     type: DataTypes.STRING(100),

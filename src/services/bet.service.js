@@ -2,9 +2,63 @@
 const betRepository = require('../repositories/bet.repository');
 
 // CREATE Bet
+// CREATE Bet
 const createBet = async (data) => {
+
+  const stake = parseFloat(data.stake) || 0;
+
+  const odds1 = parseFloat(data.oddsMatche1) || 1;
+  const odds2 = parseFloat(data.oddsMatche2) || 1;
+
+  // Calculate total odds (Accumulator logic)
+  const totalOdds = odds1 * odds2;
+
+  // Calculate payout
+  const payout = stake * totalOdds;
+    // Generate ID (timestamp)
+    const betId = Date.now();
+
+    data.id = betId;
+
+  // Attach calculated fields
+  data.total_odds = totalOdds.toFixed(2);
+  data.payout = payout.toFixed(2);
+
   const bet = await betRepository.createBet(data);
-  return bet; // return raw DB object (column-based)
+
+  return bet;
+};
+
+// APPROVE / SETTLE BET
+const approveBet = async (betId, resultStatus) => {
+
+  const bet = await betRepository.findBetById(betId);
+
+  if (!bet) {
+    throw new Error("Bet not found");
+  }
+
+  if (bet.status === "SETTLED") {
+    throw new Error("Bet already settled");
+  }
+
+  // Determine result
+  let result;
+  if (resultStatus === "WON") {
+    result = "WON";
+  } else if (resultStatus === "LOST") {
+    result = "LOST";
+  } else {
+    throw new Error("Invalid result type");
+  }
+
+  // Update bet
+  bet.result = result;
+  bet.status = "SETTLED";
+
+  await bet.save();
+
+  return bet;
 };
 
 // GET all bets
@@ -56,5 +110,6 @@ module.exports = {
   getAllBets,
   getBetById,
   updateBet,
-  deleteBet
+  deleteBet,
+  approveBet
 };

@@ -41,10 +41,36 @@ const Bet = sequelize.define('Bet', {
     allowNull: true
   },
 
+  leagueMatche1: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  leagueMatche2: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  timeMatche1: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  timeMatche2: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  dateMatche1: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  dateMatche2: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+
   result: {
     type: DataTypes.STRING(20),
     defaultValue: 'PENDING'
   },
+
 
   status: {
     type: DataTypes.STRING(20),

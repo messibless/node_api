@@ -42,11 +42,11 @@ const Bet = sequelize.define('Bet', {
   },
 
   leagueMatche1: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(250),
     allowNull: true
   },
   leagueMatche2: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(250),
     allowNull: true
   },
   timeMatche1: {

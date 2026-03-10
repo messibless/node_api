@@ -15,10 +15,7 @@ const createBet = async (data) => {
 
   // Calculate payout
   const payout = stake * totalOdds;
-    // Generate ID (timestamp)
-    const betId = Date.now();
 
-    data.id = betId;
 
   // Attach calculated fields
   data.total_odds = totalOdds.toFixed(2);

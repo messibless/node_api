@@ -6,7 +6,7 @@ const Balance = require('./balance.model');
 const initModels = async () => {
   try {
     await sequelize.sync({
-      force: true // usitumie true kila wakati
+      force: false // usitumie true kila wakati
     });
     const balanceCount = await Balance.count();
 

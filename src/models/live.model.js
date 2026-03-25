@@ -80,6 +80,10 @@ const LiveMatch = sequelize.define('LiveMatch', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
+  market: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
 
   hasBoostedOdds: {
     type: DataTypes.BOOLEAN,

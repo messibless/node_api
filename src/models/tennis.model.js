@@ -65,6 +65,10 @@ const Tennis = sequelize.define('TennisMatch', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
+  market: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
 
   hasBoostedOdds: {
     type: DataTypes.BOOLEAN,

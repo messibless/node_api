@@ -63,6 +63,10 @@ const EfootballMatch = sequelize.define('EfootballMatch', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
+  market: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
 
   hasBoostedOdds: {
     type: DataTypes.BOOLEAN,

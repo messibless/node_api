@@ -30,6 +30,8 @@ const allowedOrigins = [
   'http://localhost:5173',   // local dev
   'http://localhost:5174/admin-panel',   // example: another frontend
   'http://localhost:5174',
+  'https://betpaw.co.tz',        // production frontend
+  'https://www.betpaw.co.tz',    // production frontend
 ];
 app.use(helmet());
 app.use(cors({
